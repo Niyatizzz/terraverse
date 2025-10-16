@@ -70,7 +70,8 @@ Check out Terraverse in action! Explore, build, and interact with the 3D world.
 [Play Terraverse Online](https://your-demo-link.com) 🚀  
 
 ### Screenshots
-![Terraverse Screenshot 1](assets/screenshot1.png)  
+![Terraverse Screenshot 1](screenshots/image1.png)  
+![Terraverse Screenshot 2](screenshots/image2.png)  
 
 ---
 
