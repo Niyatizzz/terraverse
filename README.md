@@ -79,6 +79,3 @@ Open your browser at the URL provided by the dev server (usually http://localhos
 
 Happy Contributing!
 
-
-# Run the development server
-npm run dev
