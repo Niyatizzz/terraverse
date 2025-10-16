@@ -82,5 +82,11 @@ npm run dev
 ```
 Open your browser at the URL provided by the dev server (usually http://localhost:5173) to start exploring Terraverse.
 
-Happy Contributing!
+
+Happy Exploring! Build, interact, and immerse yourself in the virtual world of Terraverse.
+
+---
+
+*Built under CG Extra-Lab-1&2 - Virtual Environment Design*
+
 
