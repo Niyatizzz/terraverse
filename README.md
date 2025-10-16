@@ -67,7 +67,7 @@ Terraverse brings **computer graphics concepts** to life:
 Check out Terraverse in action! Explore, build, and interact with the 3D world.  
 
 ### Live Demo
-[Play Terraverse Online](https://your-demo-link.com) 🚀  
+[Play Terraverse Online](https://drive.google.com/file/d/1nJCy0wq-_D9CSPfReEG0K4Uqq4IMdtHK/view?usp=sharing) 🚀  
 
 ### Screenshots
 ![Terraverse Screenshot 1](screenshots/image1.png)  
