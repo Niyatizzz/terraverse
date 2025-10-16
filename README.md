@@ -1,32 +1,104 @@
-# minecraft-threejs-clone
+# 🎮 TERRAVERSE
 
-A simple Minecraft clone built with Three.js.
+Welcome to **Terraverse** – your very own **virtual 3D playground**! 🏞️  
+Dive into a procedurally generated world, explore forests, mountains, and plains, gather resources, build your dream structures, and interact with a fully dynamic environment.  
 
-![Screenshot 2023-09-29 at 12 14 34 AM](https://github.com/dgreenheck/minecraft-threejs-clone/assets/3814912/c39c6b2a-f6e4-4f43-824c-d0e727539170)
+Terraverse isn’t just a game – it’s a **hands-on way to learn computer graphics** while having fun! ✨
 
-## Live Demo
+---
 
-https://dgreenheck.github.io/minecraft-threejs-clone/
+## ✨ Features
 
-## Project Goal
+- 🌍 **Procedural Worlds** – Every game feels fresh! Generate new landscapes every time.  
+- 🌲 **Diverse Biomes** – From lush forests to towering mountains, each biome has its own vibe.  
+- ⛏️ **Collect Resources** – Gather Coal, Iron, and more to craft tools or build amazing structures.  
+- 🧱 **Terraforming** – Place or remove blocks to reshape the world however you like.  
+- 💾 **Save & Load** – Pause your adventure and continue anytime.  
+- 🏗️ **3D Interactive World** – Walk, jump, and explore in fully immersive 3D.  
+- 💡 **Lighting & Shading** – Realistic shadows, ambient light, and material-based effects.  
+- 🎥 **Camera & Controls** – Free orbital camera, first-person view, sprint, jump, and debug mode.  
+- 🔨 **Block Interaction** – Select blocks with number keys, use your pickaxe, and get building!  
 
-Teach developers how to build a Minecraft clone that runs in the browser without using advanced graphics techniques or writing custom shader code.
+---
 
-## How did you make this? Can I learn?
+## 🎮 Controls
 
-You sure can! I created a tutorial video series on my YouTube channel which you can check out [here](https://www.youtube.com/playlist?list=PLtzt35QOXmkKALLv9RzT8oGwN5qwmRjTo).
+| Key | Action |
+|-----|--------|
+| **WASD** | Move |
+| **SHIFT** | Sprint |
+| **SPACE** | Jump |
+| **R** | Reset Camera |
+| **U** | Toggle UI |
+| **0** | Pickaxe |
+| **1-8** | Select Block |
+| **F1** | Save Game |
+| **F2** | Load Game |
+| **F10** | Debug Camera |
 
-## Features
-- Procedural World Generation
-- Biomes
-- Resources (Coal and Iron)
-- Terrain Chunking
-- Terraforming
-- Save/Load
+**Pro Tip:** Press any key to start your adventure! 🚀
 
-## ToDo List
-- Inventory Management
-- Crafting
-- More block types
-- Item drops
-- NPCs
+---
+
+## 🧠 Concepts You’ll Explore
+
+Terraverse brings **computer graphics concepts** to life:  
+
+- 🔹 **Procedural Generation** – Dynamic terrain creation for endless possibilities.  
+- 🔹 **3D Transformations & Camera Control** – Move, rotate, and explore in a 3D space.  
+- 🔹 **Lighting & Shading** – Experience realistic illumination and shadow effects.  
+- 🔹 **Collision & Interaction** – Interact with blocks and the environment seamlessly.  
+- 🔹 **Performance Optimization** – Smooth gameplay even in huge worlds with terrain chunking.  
+
+---
+
+## 🛠 Tech Stack
+
+- **Three.js** – Create immersive 3D worlds directly in your browser.  
+- **JavaScript** – Handles game logic, procedural generation, and controls.  
+- **HTML5 & CSS3** – UI, overlays, and in-game HUD.  
+
+> Three.js makes real-time 3D rendering possible, allowing Terraverse to showcase **lighting, camera systems, and dynamic block interactions**.
+
+---
+
+## 🖥️ Demo
+
+Check out Terraverse in action! Explore, build, and interact with the 3D world.  
+
+### Live Demo
+[Play Terraverse Online](https://your-demo-link.com) 🚀  
+
+### Screenshots
+![Terraverse Screenshot 1](assets/screenshot1.png)  
+
+---
+
+## 📂 Setup & Run
+
+#### 1. Clone the repository
+```bash
+git clone https://github.com/yourusername/terraverse.git
+```
+#### 2. Navigate into the project
+```bash
+cd terraverse
+```
+#### 3. Install dependencies
+```bash
+npm install
+```
+#### 4. Run the project
+```bash
+npm run dev
+```
+Open your browser at the URL provided by the dev server (usually http://localhost:5173) to start exploring Terraverse.
+
+
+Happy Exploring! Build, interact, and immerse yourself in the virtual world of Terraverse.
+
+---
+
+*Built under CG Extra-Lab-1&2 - Virtual Environment Design*
+
+
