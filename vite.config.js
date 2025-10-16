@@ -2,7 +2,7 @@
 * @type {import('vite').UserConfig}
 */
 export default {
-  base: '/minecraft-threejs-clone/',
+  base: '/terraverse-virtual-env/',
   build: {
     sourcemap: true
   }
