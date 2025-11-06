@@ -8,7 +8,7 @@ export class BossEnemy extends Actor {
   constructor(scene, world, position, player) {
     super(scene, world, position);
     this.type = 'boss';
-    this.name = 'Niyati';
+    this.name = 'Enemy';
     this.player = player;
     
     // Boss stats
