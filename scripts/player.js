@@ -1,7 +1,7 @@
-import * as THREE from 'three';
-import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-import { World } from './world';
-import { blocks } from './blocks';
+import * as THREE from "three";
+import { PointerLockControls } from "three/addons/controls/PointerLockControls.js";
+import { World } from "./world";
+import { blocks } from "./blocks";
 
 const CENTER_SCREEN = new THREE.Vector2();
 
@@ -18,47 +18,54 @@ export class Player {
   velocity = new THREE.Vector3();
   #worldVelocity = new THREE.Vector3();
 
-  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera = new THREE.PerspectiveCamera(
+    70,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+  );
   cameraHelper = new THREE.CameraHelper(this.camera);
   controls = new PointerLockControls(this.camera, document.body);
   debugCamera = false;
 
-  raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 3);
+  raycaster = new THREE.Raycaster(
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+    0,
+    50
+  );
   selectedCoords = null;
   activeBlockId = blocks.empty.id;
 
+  // Shooting properties
+  actorManager = null; // Will be set from main.js
+  bullets = [];
+  maxBullets = 100;
+
   tool = {
-    // Group that will contain the tool mesh
     container: new THREE.Group(),
-    // Whether or not the tool is currently animating
     animate: false,
-    // The time the animation was started
     animationStart: 0,
-    // The rotation speed of the tool
     animationSpeed: 0.025,
-    // Reference to the current animation
-    animation: null
-  }
+    animation: null,
+  };
 
   constructor(scene, world) {
+    this.scene = scene;
     this.world = world;
     this.position.set(32, 32, 32);
     this.cameraHelper.visible = false;
     scene.add(this.camera);
     scene.add(this.cameraHelper);
 
-    // Hide/show instructions based on pointer controls locking/unlocking
-    this.controls.addEventListener('lock', this.onCameraLock.bind(this));
-    this.controls.addEventListener('unlock', this.onCameraUnlock.bind(this));
+    this.controls.addEventListener("lock", this.onCameraLock.bind(this));
+    this.controls.addEventListener("unlock", this.onCameraUnlock.bind(this));
 
-    // The tool is parented to the camera
     this.camera.add(this.tool.container);
 
-    // Set raycaster to use layer 0 so it doesn't interact with water mesh on layer 1
     this.raycaster.layers.set(0);
     this.camera.layers.enable(1);
 
-    // Wireframe mesh visualizing the player's bounding cylinder
     this.boundsHelper = new THREE.Mesh(
       new THREE.CylinderGeometry(this.radius, this.radius, this.height, 16),
       new THREE.MeshBasicMaterial({ wireframe: true })
@@ -66,72 +73,54 @@ export class Player {
     this.boundsHelper.visible = false;
     scene.add(this.boundsHelper);
 
-    // Helper used to highlight the currently active block
     const selectionMaterial = new THREE.MeshBasicMaterial({
       transparent: true,
       opacity: 0.3,
-      color: 0xffffaa
+      color: 0xffffaa,
     });
     const selectionGeometry = new THREE.BoxGeometry(1.01, 1.01, 1.01);
     this.selectionHelper = new THREE.Mesh(selectionGeometry, selectionMaterial);
     scene.add(this.selectionHelper);
 
-    // Add event listeners for keyboard/mouse events
-    document.addEventListener('keyup', this.onKeyUp.bind(this));
-    document.addEventListener('keydown', this.onKeyDown.bind(this));
-    document.addEventListener('mousedown', this.onMouseDown.bind(this));
+    document.addEventListener("keyup", this.onKeyUp.bind(this));
+    document.addEventListener("keydown", this.onKeyDown.bind(this));
+    document.addEventListener("mousedown", this.onMouseDown.bind(this));
   }
 
   onCameraLock() {
-    document.getElementById('overlay').style.visibility = 'hidden';
+    document.getElementById("overlay").style.visibility = "hidden";
   }
 
   onCameraUnlock() {
     if (!this.debugCamera) {
-      document.getElementById('overlay').style.visibility = 'visible';
+      document.getElementById("overlay").style.visibility = "visible";
     }
   }
 
-  /**
-   * Updates the state of the player
-   * @param {World} world 
-   */
   update(world) {
     this.updateBoundsHelper();
     this.updateRaycaster(world);
+    this.updateBullets();
 
     if (this.tool.animate) {
       this.updateToolAnimation();
     }
   }
 
-  /**
-   * Updates the raycaster used for block selection
-   * @param {World} world 
-   */
   updateRaycaster(world) {
     this.raycaster.setFromCamera(CENTER_SCREEN, this.camera);
     const intersections = this.raycaster.intersectObject(world, true);
 
     if (intersections.length > 0) {
       const intersection = intersections[0];
-
-      // Get the chunk associated with the selected block
       const chunk = intersection.object.parent;
-
-      // Get the transformation matrix for the selected block
       const blockMatrix = new THREE.Matrix4();
       intersection.object.getMatrixAt(intersection.instanceId, blockMatrix);
 
-      // Set the selected coordinates to the origin of the chunk,
-      // then apply the transformation matrix of the block to get
-      // the block coordinates
       this.selectedCoords = chunk.position.clone();
       this.selectedCoords.applyMatrix4(blockMatrix);
 
       if (this.activeBlockId !== blocks.empty.id) {
-        // If we are adding a block, move it 1 block over in the direction
-        // of where the ray intersected the cube
         this.selectedCoords.add(intersection.normal);
       }
 
@@ -143,10 +132,190 @@ export class Player {
     }
   }
 
-  /**
-   * Updates the state of the player based on the current user inputs
-   * @param {Number} dt 
-   */
+  shoot() {
+    if (!this.actorManager) {
+      console.warn("Actor manager not set");
+      return;
+    }
+
+    // Create bullet
+    const bulletGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+    const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
+
+    // Position bullet at gun barrel
+    bullet.position.copy(this.camera.position);
+
+    // Set bullet direction
+    const direction = new THREE.Vector3();
+    this.camera.getWorldDirection(direction);
+    bullet.userData.velocity = direction.multiplyScalar(50);
+    bullet.userData.createdAt = performance.now();
+
+    this.scene.add(bullet);
+    this.bullets.push(bullet);
+
+    // Limit bullets
+    if (this.bullets.length > this.maxBullets) {
+      const oldBullet = this.bullets.shift();
+      this.scene.remove(oldBullet);
+      oldBullet.geometry.dispose();
+      oldBullet.material.dispose();
+    }
+
+    // Gun recoil animation
+    if (this.tool.container.children.length > 0) {
+      const gun = this.tool.container;
+      gun.position.z += 0.1;
+      setTimeout(() => {
+        gun.position.z -= 0.1;
+      }, 50);
+    }
+
+    // Muzzle flash
+    this.createMuzzleFlash();
+  }
+
+  createMuzzleFlash() {
+    const flashGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+    const flashMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffaa00,
+      transparent: true,
+      opacity: 0.8,
+    });
+    const flash = new THREE.Mesh(flashGeometry, flashMaterial);
+
+    flash.position.copy(this.camera.position);
+    const direction = new THREE.Vector3();
+    this.camera.getWorldDirection(direction);
+    flash.position.add(direction.multiplyScalar(1));
+
+    this.scene.add(flash);
+
+    setTimeout(() => {
+      this.scene.remove(flash);
+      flash.geometry.dispose();
+      flash.material.dispose();
+    }, 50);
+  }
+
+  updateBullets() {
+    const bulletsToRemove = [];
+
+    for (let i = 0; i < this.bullets.length; i++) {
+      const bullet = this.bullets[i];
+
+      // Move bullet
+      bullet.position.add(
+        bullet.userData.velocity.clone().multiplyScalar(0.016)
+      );
+
+      // Check collision with actors
+      if (this.actorManager) {
+        for (const actor of this.actorManager.actors) {
+          const distance = bullet.position.distanceTo(actor.position);
+          const hitRadius = actor.type === "boss" ? 2 : 1; // Bigger hitbox for boss
+
+          if (distance < hitRadius) {
+            // Hit actor!
+            if (actor.type === "boss") {
+              // Boss takes damage
+              const isDead = actor.takeDamage(1);
+              if (isDead) {
+                this.actorManager.removeActor(actor.id);
+              }
+            } else {
+              // Regular actors die instantly
+              this.killActor(actor);
+            }
+            bulletsToRemove.push(i);
+            break;
+          }
+        }
+      }
+
+      // Remove old bullets
+      if (performance.now() - bullet.userData.createdAt > 3000) {
+        bulletsToRemove.push(i);
+      }
+
+      // Remove bullets that hit terrain
+      const block = this.world.getBlock(
+        Math.floor(bullet.position.x),
+        Math.floor(bullet.position.y),
+        Math.floor(bullet.position.z)
+      );
+      if (block && block.id !== 0) {
+        bulletsToRemove.push(i);
+      }
+    }
+
+    // Remove bullets (reverse order to maintain indices)
+    for (let i = bulletsToRemove.length - 1; i >= 0; i--) {
+      const index = bulletsToRemove[i];
+      const bullet = this.bullets[index];
+      this.scene.remove(bullet);
+      bullet.geometry.dispose();
+      bullet.material.dispose();
+      this.bullets.splice(index, 1);
+    }
+  }
+
+  killActor(actor) {
+    // Death effect
+    this.createDeathEffect(actor.position, actor.getColor());
+
+    // Remove actor
+    if (this.actorManager) {
+      this.actorManager.removeActor(actor.id);
+    }
+
+    console.log(`💀 Eliminated ${actor.name} (${actor.type})`);
+  }
+
+  createDeathEffect(position, color) {
+    // Create particle explosion
+    for (let i = 0; i < 20; i++) {
+      const particleGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+      const particleMaterial = new THREE.MeshBasicMaterial({ color: color });
+      const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+
+      particle.position.copy(position);
+
+      const velocity = new THREE.Vector3(
+        (Math.random() - 0.5) * 5,
+        Math.random() * 5,
+        (Math.random() - 0.5) * 5
+      );
+      particle.userData.velocity = velocity;
+      particle.userData.lifetime = 1000;
+      particle.userData.createdAt = performance.now();
+
+      this.scene.add(particle);
+
+      // Animate and remove particles
+      const animateParticle = () => {
+        const elapsed = performance.now() - particle.userData.createdAt;
+        if (elapsed < particle.userData.lifetime) {
+          particle.position.add(
+            particle.userData.velocity.clone().multiplyScalar(0.016)
+          );
+          particle.userData.velocity.y -= 9.8 * 0.016;
+          particle.rotation.x += 0.1;
+          particle.rotation.y += 0.1;
+
+          particle.material.opacity = 1 - elapsed / particle.userData.lifetime;
+          requestAnimationFrame(animateParticle);
+        } else {
+          this.scene.remove(particle);
+          particle.geometry.dispose();
+          particle.material.dispose();
+        }
+      };
+      animateParticle();
+    }
+  }
+
   applyInputs(dt) {
     if (this.controls.isLocked === true) {
       this.velocity.x = this.input.x * (this.sprinting ? 1.5 : 1);
@@ -161,74 +330,47 @@ export class Player {
       }
     }
 
-    document.getElementById('info-player-position').innerHTML = this.toString();
+    document.getElementById("info-player-position").innerHTML = this.toString();
   }
 
-  /**
-   * Updates the position of the player's bounding cylinder helper
-   */
   updateBoundsHelper() {
     this.boundsHelper.position.copy(this.camera.position);
     this.boundsHelper.position.y -= this.height / 2;
   }
 
-  /**
-   * Set the tool object the player is holding
-   * @param {THREE.Mesh} tool 
-   */
   setTool(tool) {
     this.tool.container.clear();
     this.tool.container.add(tool);
     this.tool.container.receiveShadow = true;
     this.tool.container.castShadow = true;
-
-    this.tool.container.position.set(0.6, -0.3, -0.5);
-    this.tool.container.scale.set(0.5, 0.5, 0.5);
-    this.tool.container.rotation.z = Math.PI / 2;
-    this.tool.container.rotation.y = Math.PI + 0.2;
   }
 
-  /**
-   * Animates the tool rotation
-   */
   updateToolAnimation() {
     if (this.tool.container.children.length > 0) {
-      const t = this.tool.animationSpeed * (performance.now() - this.tool.animationStart);
+      const t =
+        this.tool.animationSpeed *
+        (performance.now() - this.tool.animationStart);
       this.tool.container.children[0].rotation.y = 0.5 * Math.sin(t);
     }
   }
 
-  /**
-   * Returns the current world position of the player
-   * @returns {THREE.Vector3}
-   */
   get position() {
     return this.camera.position;
   }
 
-  /**
-   * Returns the velocity of the player in world coordinates
-   * @returns {THREE.Vector3}
-   */
   get worldVelocity() {
     this.#worldVelocity.copy(this.velocity);
-    this.#worldVelocity.applyEuler(new THREE.Euler(0, this.camera.rotation.y, 0));
+    this.#worldVelocity.applyEuler(
+      new THREE.Euler(0, this.camera.rotation.y, 0)
+    );
     return this.#worldVelocity;
   }
 
-  /**
-   * Applies a change in velocity 'dv' that is specified in the world frame
-   * @param {THREE.Vector3} dv 
-   */
   applyWorldDeltaVelocity(dv) {
     dv.applyEuler(new THREE.Euler(0, -this.camera.rotation.y, 0));
     this.velocity.add(dv);
   }
 
-  /**
-   * Event handler for 'keyup' event
-   * @param {KeyboardEvent} event 
-   */
   onKeyDown(event) {
     if (!this.controls.isLocked) {
       this.debugCamera = false;
@@ -236,92 +378,85 @@ export class Player {
     }
 
     switch (event.code) {
-      case 'Digit0':
-      case 'Digit1':
-      case 'Digit2':
-      case 'Digit3':
-      case 'Digit4':
-      case 'Digit5':
-      case 'Digit6':
-      case 'Digit7':
-      case 'Digit8':
-        // Update the selected toolbar icon
-        document.getElementById(`toolbar-${this.activeBlockId}`)?.classList.remove('selected');
-        document.getElementById(`toolbar-${event.key}`)?.classList.add('selected');
-
+      case "Digit0":
+      case "Digit1":
+      case "Digit2":
+      case "Digit3":
+      case "Digit4":
+      case "Digit5":
+      case "Digit6":
+      case "Digit7":
+      case "Digit8":
+        document
+          .getElementById(`toolbar-${this.activeBlockId}`)
+          ?.classList.remove("selected");
+        document
+          .getElementById(`toolbar-${event.key}`)
+          ?.classList.add("selected");
         this.activeBlockId = Number(event.key);
-
-        // Update the pickaxe visibility
-        this.tool.container.visible = (this.activeBlockId === 0);
-
+        this.tool.container.visible = this.activeBlockId === 0;
         break;
-      case 'KeyW':
+      case "KeyW":
         this.input.z = this.maxSpeed;
         break;
-      case 'KeyA':
+      case "KeyA":
         this.input.x = -this.maxSpeed;
         break;
-      case 'KeyS':
+      case "KeyS":
         this.input.z = -this.maxSpeed;
         break;
-      case 'KeyD':
+      case "KeyD":
         this.input.x = this.maxSpeed;
         break;
-      case 'KeyR':
+      case "KeyR":
         if (this.repeat) break;
         this.position.y = 32;
         this.velocity.set(0, 0, 0);
         break;
-      case 'ShiftLeft':
-      case 'ShiftRight':
+      case "ShiftLeft":
+      case "ShiftRight":
         this.sprinting = true;
         break;
-      case 'Space':
+      case "Space":
         if (this.onGround) {
           this.velocity.y += this.jumpSpeed;
         }
         break;
-      case 'F10':
+      case "F10":
         this.debugCamera = true;
         this.controls.unlock();
         break;
     }
   }
 
-  /**
-   * Event handler for 'keyup' event
-   * @param {KeyboardEvent} event 
-   */
   onKeyUp(event) {
     switch (event.code) {
-      case 'KeyW':
+      case "KeyW":
         this.input.z = 0;
         break;
-      case 'KeyA':
+      case "KeyA":
         this.input.x = 0;
         break;
-      case 'KeyS':
+      case "KeyS":
         this.input.z = 0;
         break;
-      case 'KeyD':
+      case "KeyD":
         this.input.x = 0;
         break;
-      case 'ShiftLeft':
-      case 'ShiftRight':
+      case "ShiftLeft":
+      case "ShiftRight":
         this.sprinting = false;
         break;
     }
   }
 
-  /**
-   * Event handler for 'mousedown'' event
-   * @param {MouseEvent} event 
-   */
   onMouseDown(event) {
     if (this.controls.isLocked) {
-      // Is a block selected?
-      if (this.selectedCoords) {
-        // If active block is an empty block, then we are in delete mode
+      // If tool is active (slot 0), shoot
+      if (this.activeBlockId === 0) {
+        this.shoot();
+      } else if (this.selectedCoords) {
+        // Block placement/removal
         if (this.activeBlockId === blocks.empty.id) {
           this.world.removeBlock(
             this.selectedCoords.x,
@@ -337,29 +472,20 @@ export class Player {
           );
         }
 
-        // If the tool isn't currently animating, trigger the animation
         if (!this.tool.animate) {
           this.tool.animate = true;
           this.tool.animationStart = performance.now();
-
-          // Clear the existing timeout so it doesn't cancel our new animation
           clearTimeout(this.tool.animation);
-
-          // Stop the animation after 1.5 cycles
           this.tool.animation = setTimeout(() => {
             this.tool.animate = false;
-          }, 3 * Math.PI / this.tool.animationSpeed);
+          }, (3 * Math.PI) / this.tool.animationSpeed);
         }
       }
     }
   }
 
-  /**
-   * Returns player position in a readable string form
-   * @returns {string}
-   */
   toString() {
-    let str = '';
+    let str = "";
     str += `X: ${this.position.x.toFixed(3)} `;
     str += `Y: ${this.position.y.toFixed(3)} `;
     str += `Z: ${this.position.z.toFixed(3)}`;
