@@ -40,6 +40,17 @@ Terraverse isn’t just a game – it’s a **hands-on way to learn computer gra
 
 ---
 
+## 🎮 Character Controls
+
+| Key | Action |
+|-----|--------|
+| **N** | Spawn Random Actor |
+| **B** | Spawn Cat |
+| **Y** | Spawn Dog |
+| **G** | Spawn Enemy |
+
+---
+
 ## 🧠 Concepts You’ll Explore
 
 Terraverse brings **computer graphics concepts** to life:  
@@ -70,9 +81,12 @@ Check out Terraverse in action! Explore, build, and interact with the 3D world.
 [Play Terraverse Online](https://drive.google.com/file/d/1nJCy0wq-_D9CSPfReEG0K4Uqq4IMdtHK/view?usp=sharing) 🚀  
 
 ### Screenshots
-![Terraverse Screenshot 1](screenshots/image1.png)  
+#### Terrain
+![Terraverse Screenshot 1](screenshots/image.png)  
 ![Terraverse Screenshot 2](screenshots/image2.png)  
-
+#### Actor Interactions
+![Terraverse Screenshot 3](screenshots/image3.png)  
+![Terraverse Screenshot 4](screenshots/image4.png) 
 ---
 
 ## 📂 Setup & Run
