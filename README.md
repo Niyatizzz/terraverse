@@ -85,8 +85,8 @@ Check out Terraverse in action! Explore, build, and interact with the 3D world.
 ![Terraverse Screenshot 1](screenshots/image.png)  
 ![Terraverse Screenshot 2](screenshots/image2.png)  
 #### Actor Interactions
-![Terraverse Screenshot 3](screenshots/image3.png)  
-![Terraverse Screenshot 4](screenshots/image4.png) 
+![Terraverse Screenshot 3](screenshots/actors/image.png)  
+![Terraverse Screenshot 4](screenshots/enemy/image.png) 
 ---
 
 ## 📂 Setup & Run
@@ -114,6 +114,6 @@ Happy Exploring! Build, interact, and immerse yourself in the virtual world of T
 
 ---
 
-*Built under CG Extra-Lab-1&2 - Virtual Environment Design*
+*Built under CG Extra-Lab-1,2,3 - Virtual Environment Design, Analyzing Interactions and Dynamics Among Key Actors in Virtual Environments*
 
 
